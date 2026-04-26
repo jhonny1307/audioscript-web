@@ -36,7 +36,7 @@ button { margin:5px 5px 5px 0; }
 <footer style="margin-top:20px; font-size:14px; color:#888; text-align:center;">
     made with AI (chatGPT),
     <a href="https://github.com/jhonny1307/audioscript-web" target="_blank" style="color:#aaa;">
-        project file (v8.1)
+        project file (v9)
     </a>
 </footer>
 
@@ -87,7 +87,6 @@ function splitScript() {
         }
 
         if(toggles[i] === undefined) toggles[i] = 0;
-
         state[i] = "idle";
 
         const div = document.createElement("div");
@@ -98,18 +97,39 @@ function splitScript() {
                 <button id="like_${i}" onclick="toggleLike(${i})">${toggles[i] ? "🔴" : "⚫"}</button>
                 <button id="btn_${i}" onclick="toggleRecording(${i})">Record</button>
                 <button id="interrupt_${i}" onclick="interruptRecording(${i})" style="display:none;">Interrupt</button>
+                <button id="upload_${i}" onclick="uploadAudio(${i})">Upload</button>
+                <input type="file" id="file_${i}" accept="audio/*" style="display:none;">
                 <audio controls id="audio_${i}"></audio>
             </div>
         `;
         container.appendChild(div);
+
+        document.getElementById(`file_${i}`).addEventListener("change", (e)=>{
+            const file = e.target.files[0];
+            if(!file) return;
+
+            const blob = new Blob([file], { type:file.type });
+            chunks[i] = blob;
+            document.getElementById(`audio_${i}`).src = URL.createObjectURL(blob);
+
+            state[i] = "recorded";
+            document.getElementById(`btn_${i}`).innerText = "Re-record";
+
+            autoSave();
+        });
     });
 
     autoSave();
 }
 
+function uploadAudio(i){
+    document.getElementById(`file_${i}`).click();
+}
+
 async function toggleRecording(i){
     const btn = document.getElementById(`btn_${i}`);
     const interruptBtn = document.getElementById(`interrupt_${i}`);
+    const uploadBtn = document.getElementById(`upload_${i}`);
 
     if(state[i] === "idle" || state[i] === "recorded"){
         currentStream = await navigator.mediaDevices.getUserMedia({ audio:true });
@@ -120,7 +140,7 @@ async function toggleRecording(i){
         mediaRecorder.ondataavailable = e => tempData[i].push(e.data);
 
         mediaRecorder.onstop = () => {
-            if(tempData[i] && tempData[i].length > 0){
+            if(tempData[i].length){
                 const blob = new Blob(tempData[i], { type:"audio/webm" });
                 chunks[i] = blob;
                 document.getElementById(`audio_${i}`).src = URL.createObjectURL(blob);
@@ -131,6 +151,7 @@ async function toggleRecording(i){
             state[i] = "recorded";
             btn.innerText = "Re-record";
             interruptBtn.style.display = "none";
+            uploadBtn.style.display = "inline-block";
 
             autoSave();
         };
@@ -139,6 +160,7 @@ async function toggleRecording(i){
         state[i] = "recording";
         btn.innerText = "Stop";
         interruptBtn.style.display = "inline-block";
+        uploadBtn.style.display = "none";
     }
     else if(state[i] === "recording"){
         mediaRecorder.stop();
@@ -160,10 +182,12 @@ function interruptRecording(i){
 
         const btn = document.getElementById(`btn_${i}`);
         const interruptBtn = document.getElementById(`interrupt_${i}`);
+        const uploadBtn = document.getElementById(`upload_${i}`);
 
         state[i] = chunks[i] ? "recorded" : "idle";
         btn.innerText = chunks[i] ? "Re-record" : "Record";
         interruptBtn.style.display = "none";
+        uploadBtn.style.display = "inline-block";
     }
 }
 
@@ -184,11 +208,9 @@ window.onload = function(){
     for (let i in data.audios){
         const blob = base64ToBlob(data.audios[i]);
         chunks[i] = blob;
-        if(document.getElementById(`audio_${i}`)){
-            document.getElementById(`audio_${i}`).src = URL.createObjectURL(blob);
-            state[i] = "recorded";
-            document.getElementById(`btn_${i}`).innerText = "Re-record";
-        }
+        document.getElementById(`audio_${i}`).src = URL.createObjectURL(blob);
+        state[i] = "recorded";
+        document.getElementById(`btn_${i}`).innerText = "Re-record";
     }
 };
 
@@ -202,25 +224,21 @@ async function generateAudio(useAll){
         if(!useAll && !toggles[i]) continue;
 
         try {
-            const arrayBuffer = await chunks[i].arrayBuffer();
-            const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
-            buffers.push(audioBuffer);
-        } catch(e){
-            console.error("Decode error:", e);
-        }
+            const buffer = await ctx.decodeAudioData(await chunks[i].arrayBuffer());
+            buffers.push(buffer);
+        } catch(e){}
     }
 
-    if(buffers.length === 0){
+    if(!buffers.length){
         alert("No audio selected");
         return;
     }
 
-    let totalLength = buffers.reduce((acc,b)=>acc+b.length,0) + (gap/1000 * ctx.sampleRate * buffers.length);
+    let totalLength = buffers.reduce((a,b)=>a+b.length,0) + (gap/1000 * ctx.sampleRate * buffers.length);
     let output = ctx.createBuffer(1, totalLength, ctx.sampleRate);
 
     let offset = 0;
-
-    buffers.forEach(b => {
+    buffers.forEach(b=>{
         output.getChannelData(0).set(b.getChannelData(0), offset);
         offset += b.length + (gap/1000 * ctx.sampleRate);
     });
@@ -228,14 +246,11 @@ async function generateAudio(useAll){
     const wav = bufferToWav(output);
     const blob = new Blob([wav], { type:"audio/wav" });
 
-    // DOWNLOAD DIRETO
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
     a.download = "final.wav";
-    document.body.appendChild(a);
     a.click();
-    a.remove();
     URL.revokeObjectURL(url);
 }
 
@@ -244,9 +259,7 @@ function bufferToWav(buffer) {
     let arrayBuffer = new ArrayBuffer(length);
     let view = new DataView(arrayBuffer);
 
-    function writeString(v, o, s){
-        for (let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i));
-    }
+    function writeString(v,o,s){ for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); }
 
     writeString(view,0,"RIFF");
     view.setUint32(4,36 + buffer.length*2,true);
@@ -274,10 +287,10 @@ function bufferToWav(buffer) {
 }
 
 function blobToBase64(blob){
-    return new Promise((resolve)=>{
-        const reader = new FileReader();
-        reader.onloadend = ()=> resolve(reader.result);
-        reader.readAsDataURL(blob);
+    return new Promise(resolve=>{
+        const r = new FileReader();
+        r.onloadend = ()=>resolve(r.result);
+        r.readAsDataURL(blob);
     });
 }
 
@@ -286,11 +299,9 @@ function base64ToBlob(base64){
     const mime = arr[0].match(/:(.*?);/)[1];
     const bstr = atob(arr[1]);
     let n = bstr.length;
-    const u8arr = new Uint8Array(n);
-    while(n--){
-        u8arr[n] = bstr.charCodeAt(n);
-    }
-    return new Blob([u8arr], {type:mime});
+    const u8 = new Uint8Array(n);
+    while(n--) u8[n] = bstr.charCodeAt(n);
+    return new Blob([u8], {type:mime});
 }
 </script>
 
