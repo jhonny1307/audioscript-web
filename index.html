@@ -19,7 +19,6 @@ button { margin:5px 5px 5px 0; }
 
 <div class="topbar">
     <button onclick="splitScript()">Split</button>
-    <button onclick="saveProject()">Save</button>
     <button onclick="clearProject()">Clear</button>
 </div>
 
@@ -35,8 +34,8 @@ button { margin:5px 5px 5px 0; }
 
 <footer style="margin-top:20px; font-size:14px; color:#888; text-align:center;">
     made with AI (chatGPT),
-    <a href="https://github.com/jhonny1307/audioroteiro" target="_blank" style="color:#aaa;">
-        project file (v5.2)
+    <a href="https://github.com/jhonny1307/audioscript-web" target="_blank" style="color:#aaa;">
+        project file (v6)
     </a>
 </footer>
 
@@ -46,6 +45,23 @@ let chunks = {};
 let mediaRecorder;
 let currentStream;
 let state = {}; 
+
+function autoSave(){
+    const roteiro = document.getElementById("script").value;
+
+    let audios = {};
+    for (let i in chunks){
+        audios[i] = chunks[i]; // já é blob, salvamos depois
+    }
+
+    // converter blobs pra base64
+    Promise.all(Object.keys(audios).map(async i => {
+        audios[i] = await blobToBase64(audios[i]);
+    })).then(()=>{
+        const data = { roteiro, audios };
+        localStorage.setItem("audioRoteiro", JSON.stringify(data));
+    });
+}
 
 function splitScript() {
     const text = document.getElementById("script").value;
@@ -77,6 +93,8 @@ function splitScript() {
         `;
         container.appendChild(div);
     });
+
+    autoSave(); // salvar ao dividir
 }
 
 async function toggleRecording(i){
@@ -98,6 +116,8 @@ async function toggleRecording(i){
 
             state[i] = "recorded";
             btn.innerText = "Re-record";
+
+            autoSave(); // salvar ao parar
         };
 
         mediaRecorder.start();
@@ -230,20 +250,6 @@ function base64ToBlob(base64){
         u8arr[n] = bstr.charCodeAt(n);
     }
     return new Blob([u8arr], {type:mime});
-}
-
-async function saveProject(){
-    const roteiro = document.getElementById("script").value;
-
-    let audios = {};
-    for (let i in chunks){
-        audios[i] = await blobToBase64(chunks[i]);
-    }
-
-    const data = { roteiro, audios };
-    localStorage.setItem("audioRoteiro", JSON.stringify(data));
-
-    alert("Saved");
 }
 </script>
 
