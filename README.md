@@ -130,5 +130,5 @@ Seriously.
 **Date:** `27/04/2026`
 
 | ➕ Added | 🔧 Modified | ➖ Removed |
-|----------|-------------|------------|
-| Mobile vibration feedback<br>Button hover tooltips<br>Improved placeholder guidance<br>Better spacing between comments and audio tracks | UI redesign with rounded corners<br>Background changed to `#010101`<br>Buttons styled with previous background color<br>Inputs redesigned for dark mode<br>Title updated to **🎤AudioScript web**<br>Layout improved (text → audio → controls) | nada |
+|---|---|---|
+| Mobile vibration feedback<br>Button hover tooltips<br>Improved placeholder guidance | UI redesign with rounded corners<br>Background changed to `#010101`<br>Buttons styled with previous background color<br>Title updated to **🎤AudioScript web**<br>Improved spacing between comments and audio segments<br>Input fields adapted to dark theme | asfdiahbsfdijasosifaois |
