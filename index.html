@@ -31,6 +31,10 @@ textarea, input {
     margin-bottom:10px;
     font-size:14px;
     border-radius:6px;
+    background:#111;
+    color:#eee;
+    border:1px solid #333;
+    padding:8px;
 }
 
 button {
@@ -94,7 +98,9 @@ Create comments using '//' before the comment"></textarea>
     <button onclick="clearProject()" title="Clear all saved data">Clear</button>
 </div>
 
-<h3>Gap between tracks (ms)</h3>
+<h3 title="Time between tracks in the final audio when generated (1s = 1000ms)">
+    Gap between tracks (ms)
+</h3>
 <input type="number" id="gap" value="0">
 
 <div id="parts"></div>
