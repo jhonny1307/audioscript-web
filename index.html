@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Audio Script</title>
+<title>AudioScript Web</title>
 
 <style>
 body {
@@ -17,36 +17,35 @@ body {
 
 h2 {
     display:flex;
-    align-items:flex-end;
-    gap:8px;
+    align-items:baseline;
+    gap:10px;
 }
 
 h2 span {
-    font-size:50%;
-    opacity:0.7;
+    font-size:0.5em;
+    color:#888;
 }
 
 textarea, input {
     width:100%;
     margin-bottom:10px;
     font-size:14px;
+    border-radius:8px;
+    padding:8px;
     background:#111;
     color:#eee;
     border:1px solid #333;
-    border-radius:6px;
-    padding:8px;
 }
 
 button {
     margin:4px 4px 4px 0;
     padding:6px 10px;
     font-size:13px;
+    border-radius:8px;
     background:#111;
     color:#eee;
     border:1px solid #333;
-    border-radius:6px;
     cursor:pointer;
-    transition:0.2s;
 }
 
 button:hover {
@@ -55,10 +54,9 @@ button:hover {
 
 .part {
     border:1px solid #333;
-    padding:10px;
-    margin:15px 0;
-    border-radius:8px;
-    background:#0a0a0a;
+    padding:12px;
+    margin:20px 0;
+    border-radius:10px;
 }
 
 .controls {
@@ -74,21 +72,16 @@ audio {
 }
 
 .comment {
-    border:1px dashed #444;
+    border:1px dashed #555;
     padding:12px;
     margin:25px 0;
     color:#aaa;
     font-style:italic;
-    border-radius:8px;
+    border-radius:10px;
 }
 
 .topbar {
     margin-bottom:15px;
-}
-
-/* highlight // */
-.highlight-comment {
-    font-weight:bold;
 }
 </style>
 </head>
@@ -96,12 +89,12 @@ audio {
 
 <h2>🎤AudioScript <span>web</span></h2>
 
-<textarea id="script" rows="6" placeholder="Cole seu roteiro aqui ou começe a criar agora...
-crie comentarios usando '//' antes do comentario"></textarea>
+<textarea id="script" rows="6" placeholder="Paste your script here or start creating now...
+Create comments using '//' before the comment"></textarea>
 
 <div class="topbar">
-    <button onclick="splitScript()" title="Divide o roteiro em faixas">Split</button>
-    <button onclick="clearProject()" title="Apaga tudo salvo">Clear</button>
+    <button onclick="splitScript()" title="Split script into audio parts">Split</button>
+    <button onclick="clearProject()" title="Clear all saved data">Clear</button>
 </div>
 
 <h3>Gap between tracks (ms)</h3>
@@ -109,12 +102,12 @@ crie comentarios usando '//' antes do comentario"></textarea>
 
 <div id="parts"></div>
 
-<button onclick="generateAudio(false)" title="Gera áudio apenas dos favoritos">Generate final audio</button>
-<button onclick="generateAudio(true)" title="Gera áudio com tudo">Generate final audio (with all)</button>
+<button onclick="generateAudio(false)" title="Generate final audio using selected tracks">Generate final audio</button>
+<button onclick="generateAudio(true)" title="Generate audio using ALL tracks">Generate final audio (with all)</button>
 
-<hr style="border:0; border-top:1px solid #222; margin-top:40px;">
+<hr style="border:0; border-top:1px solid #333; margin-top:40px;">
 
-<footer style="margin-top:20px; font-size:14px; color:#777; text-align:center;">
+<footer style="margin-top:20px; font-size:14px; color:#888; text-align:center;">
     made with AI (chatGPT),
     <a href="https://github.com/jhonny1307/audioscript-web" target="_blank" style="color:#aaa;">
         project file (v10)
@@ -132,23 +125,30 @@ let tempData = {};
 
 function vibrate(){
     if(navigator.vibrate){
-        navigator.vibrate(30);
+        navigator.vibrate(10);
     }
 }
 
-document.querySelectorAll("button").forEach(btn=>{
-    btn.addEventListener("click", vibrate);
-});
+document.addEventListener("click", vibrate);
 
-document.getElementById("script").addEventListener("input", ()=>{
-    const lines = document.getElementById("script").value.split("\n");
-    const formatted = lines.map(l=>{
-        if(l.trim().startsWith("//")){
-            return "<b>" + l + "</b>";
+function highlightComments(){
+    const textarea = document.getElementById("script");
+    const lines = textarea.value.split("\n");
+
+    const newValue = lines.map(line=>{
+        if(line.trim().startsWith("//")){
+            return line.replace("//", "**//**");
         }
-        return l;
+        return line;
     }).join("\n");
-});
+
+    // evita loop infinito
+    if(textarea.value !== newValue){
+        textarea.value = newValue;
+    }
+}
+
+document.getElementById("script").addEventListener("input", highlightComments);
 
 function autoSave(){
     const roteiro = document.getElementById("script").value;
@@ -182,7 +182,7 @@ function splitScript() {
         if(trimmed.startsWith("//")){
             const div = document.createElement("div");
             div.className = "comment";
-            div.innerHTML = "<b>" + trimmed.replace("//","") + "</b>";
+            div.innerText = trimmed.replace("//", "").trim();
             container.appendChild(div);
             return;
         }
@@ -194,14 +194,12 @@ function splitScript() {
         div.className = "part";
         div.innerHTML = `
             <p>${p}</p>
-
             <audio controls id="audio_${i}"></audio>
-
             <div class="controls">
-                <button title="Marcar como favorito" id="like_${i}" onclick="toggleLike(${i})">${toggles[i] ? "🔴" : "⚫"}</button>
-                <button title="Gravar áudio" id="btn_${i}" onclick="toggleRecording(${i})">Record</button>
-                <button title="Interromper gravação" id="interrupt_${i}" onclick="interruptRecording(${i})" style="display:none;">Interrupt</button>
-                <button title="Enviar arquivo de áudio" id="upload_${i}" onclick="uploadAudio(${i})">Upload</button>
+                <button title="Mark as good/bad" id="like_${i}" onclick="toggleLike(${i})">${toggles[i] ? "🔴" : "⚫"}</button>
+                <button title="Start or stop recording" id="btn_${i}" onclick="toggleRecording(${i})">Record</button>
+                <button title="Interrupt recording without saving" id="interrupt_${i}" onclick="interruptRecording(${i})" style="display:none;">Interrupt</button>
+                <button title="Upload external audio file" id="upload_${i}" onclick="uploadAudio(${i})">Upload</button>
                 <input type="file" id="file_${i}" accept="audio/*" style="display:none;">
             </div>
         `;
@@ -357,11 +355,55 @@ async function generateAudio(useAll){
     URL.revokeObjectURL(url);
 }
 
-/* utils iguais */
+function bufferToWav(buffer) {
+    let length = buffer.length * 2 + 44;
+    let arrayBuffer = new ArrayBuffer(length);
+    let view = new DataView(arrayBuffer);
 
-function bufferToWav(buffer){/* ...mesmo código anterior... */}
-function blobToBase64(blob){/* ... */}
-function base64ToBlob(base64){/* ... */}
+    function writeString(v,o,s){ for(let i=0;i<s.length;i++) v.setUint8(o+i,s.charCodeAt(i)); }
+
+    writeString(view,0,"RIFF");
+    view.setUint32(4,36 + buffer.length*2,true);
+    writeString(view,8,"WAVE");
+    writeString(view,12,"fmt ");
+    view.setUint32(16,16,true);
+    view.setUint16(20,1,true);
+    view.setUint16(22,1,true);
+    view.setUint32(24,buffer.sampleRate,true);
+    view.setUint32(28,buffer.sampleRate*2,true);
+    view.setUint16(32,2,true);
+    view.setUint16(34,16,true);
+    writeString(view,36,"data");
+    view.setUint32(40,buffer.length*2,true);
+
+    let offset = 44;
+    let data = buffer.getChannelData(0);
+
+    for(let i=0;i<data.length;i++,offset+=2){
+        let s = Math.max(-1, Math.min(1, data[i]));
+        view.setInt16(offset, s<0 ? s*0x8000 : s*0x7FFF, true);
+    }
+
+    return arrayBuffer;
+}
+
+function blobToBase64(blob){
+    return new Promise(resolve=>{
+        const r = new FileReader();
+        r.onloadend = ()=>resolve(r.result);
+        r.readAsDataURL(blob);
+    });
+}
+
+function base64ToBlob(base64){
+    const arr = base64.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8 = new Uint8Array(n);
+    while(n--) u8[n] = bstr.charCodeAt(n);
+    return new Blob([u8], {type:mime});
+}
 </script>
 
 </body>
