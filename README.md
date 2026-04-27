@@ -19,26 +19,26 @@ Long answer: yes… and it kept getting better.
 * ⏹️ Stop or interrupt recordings safely
 * 📂 Upload external audio files (mp3, wav, etc.)
 * ❤️ Toggle favorite segments (include/exclude in preview/export)
+* 🎧 Real-time preview of selected segments
+* 📥 Download individual audio tracks
 * 🧠 Automatic saving (no save button needed)
 * 💾 Persistent storage using `localStorage`
 * 🧹 One-click project reset
 * 🧩 Inline comments using `//`
 
   * Displayed as visual notes (not audio)
-* 🎧 Real-time preview system (fixed player)
-* 🔄 Manual preview refresh button
-* 🔊 Merge selected segments into a single `.wav` file
+* 🔊 Merge segments into a single `.wav` file
 * 🔀 Option to export all segments (ignore toggle)
-* 📥 Download individual tracks
 * ⏱️ Configurable gap between segments
 * 📱 Mobile-friendly interactions (including vibration feedback)
 * 🎨 Clean UI with improved readability and structure
+* 📌 Floating preview player (always visible)
 
 ---
 
 ## 🧠 How to Use
 
-1. Paste your script into the text box  
+1. Paste your script into the text box
 2. Add comments using `//` when needed:
 ```
 Line 1
@@ -46,25 +46,23 @@ Line 2
 // pause here
 Line 3
 ```
-
-3. Click **Split**  
-4. Record or upload audio for each segment  
-5. Optionally mark preferred segments using the toggle  
-
-6. Use the **Preview player (bottom-right)** to listen  
-
-7. Export:
-- **Download Selected** → only toggled tracks  
-- **Download All** → ignores toggle  
+3. Click **Split**
+4. Record or upload audio for each segment
+5. Optionally mark preferred segments using the toggle
+6. Use the **Preview player** to listen before exporting
+7. Download:
+   - **Download Selected** (only marked segments)
+   - **Download All** (ignores toggle)
+8. Individual tracks can also be downloaded separately
 
 ---
 
 ## 💾 Saving System
 
-* Everything is saved automatically  
-* Uses browser `localStorage`  
-* No accounts, no backend, no tracking  
-* Reopening the page restores your project instantly  
+* Everything is saved automatically
+* Uses browser `localStorage`
+* No accounts, no backend, no tracking
+* Reopening the page restores your project instantly
 
 ---
 
@@ -72,8 +70,8 @@ Line 3
 
 The **Clear** button:
 
-* Deletes all saved data  
-* Reloads the page instantly  
+* Deletes all saved data
+* Reloads the page instantly
 
 There is no undo.  
 There is only regret.
@@ -82,11 +80,11 @@ There is only regret.
 
 ## 🧱 Tech Stack
 
-* HTML  
-* CSS  
-* JavaScript (Vanilla)  
-* Web Audio API  
-* MediaRecorder API  
+* HTML
+* CSS
+* JavaScript (Vanilla)
+* Web Audio API
+* MediaRecorder API
 
 No frameworks. No dependencies. No excuses.
 
@@ -118,7 +116,7 @@ Somewhere between curiosity and chaos… this happened.
 
 ## 🤖 Credits
 
-Built with the help of **ChatGPT**
+Built with the help of [**ChatGPT**](https://chatgpt.com/share/69efb636-ea20-83e9-b798-548f8353fe56)
 
 ---
 
@@ -129,9 +127,9 @@ Seriously.
 
 ---
 
-## 📌 Latest Update - V11  
+## 📌 Latest Update - V11.1  
 **Date:** `27/04/2026`
 
 | ➕ Added | 🔧 Modified | ➖ Removed |
 |---|---|---|
-| Fixed preview player (always visible)<br>Manual preview refresh button (🔄)<br>Download individual tracks | Preview system replaces old generation flow<br>Export buttons renamed to **Download Selected** / **Download All**<br>Preview auto-updates on recording, upload, toggle, and gap change<br>Layout adjusted for floating preview (extra bottom spacing) | Generate final audio button<br>Old static preview behavior |
+| Floating preview player<br>Manual preview refresh button (🔄)<br>Per-track download button | Preview system redesigned (real-time updates)<br>Audio generation split into preview/export logic<br>Preview now updates on stop, upload, toggle, and gap change<br>Layout updated to support fixed preview<br>Extra bottom spacing for UI safety | Generate final audio button |
