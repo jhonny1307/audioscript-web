@@ -26,7 +26,47 @@ h2 span {
     color:#888;
 }
 
-textarea, input {
+/* EDITOR */
+.editor {
+    position:relative;
+}
+
+#highlight {
+    position:absolute;
+    top:0;
+    left:0;
+    right:0;
+    bottom:0;
+    padding:8px;
+    white-space:pre-wrap;
+    word-wrap:break-word;
+    color:#eee;
+    background:#111;
+    border-radius:8px;
+    pointer-events:none;
+    border:1px solid #333;
+}
+
+#highlight .commentMark {
+    font-weight:bold;
+}
+
+textarea#script {
+    width:100%;
+    margin-bottom:10px;
+    font-size:14px;
+    position:relative;
+    background:transparent;
+    color:transparent;
+    caret-color:#fff;
+    z-index:2;
+    resize:vertical;
+    padding:8px;
+    border-radius:8px;
+    border:1px solid #333;
+}
+
+input {
     width:100%;
     margin-bottom:10px;
     font-size:14px;
@@ -73,8 +113,8 @@ audio {
 
 .comment {
     border:1px dashed #555;
-    padding:12px;
-    margin:25px 0;
+    padding:16px;
+    margin:30px 0;
     color:#aaa;
     font-style:italic;
     border-radius:10px;
@@ -89,8 +129,12 @@ audio {
 
 <h2>🎤AudioScript <span>web</span></h2>
 
-<textarea id="script" rows="6" placeholder="Paste your script here or start creating now...
+<div class="editor">
+    <pre id="highlight"></pre>
+    <textarea id="script" rows="6"
+    placeholder="Paste your script here or start creating now...
 Create comments using '//' before the comment"></textarea>
+</div>
 
 <div class="topbar">
     <button onclick="splitScript()" title="Split script into audio parts">Split</button>
@@ -110,7 +154,7 @@ Create comments using '//' before the comment"></textarea>
 <footer style="margin-top:20px; font-size:14px; color:#888; text-align:center;">
     made with AI (chatGPT),
     <a href="https://github.com/jhonny1307/audioscript-web" target="_blank" style="color:#aaa;">
-        project file (v10)
+        project file (v10.0.1)
     </a>
 </footer>
 
@@ -128,27 +172,29 @@ function vibrate(){
         navigator.vibrate(10);
     }
 }
-
 document.addEventListener("click", vibrate);
 
-function highlightComments(){
-    const textarea = document.getElementById("script");
-    const lines = textarea.value.split("\n");
+/* HIGHLIGHT REAL (SEM QUEBRAR TEXTO) */
+function updateHighlight(){
+    const text = document.getElementById("script").value;
+    const highlight = document.getElementById("highlight");
 
-    const newValue = lines.map(line=>{
+    const html = text.split("\n").map(line=>{
         if(line.trim().startsWith("//")){
-            return line.replace("//", "**//**");
+            return line.replace("//", "<span class='commentMark'>//</span>");
         }
         return line;
     }).join("\n");
 
-    // evita loop infinito
-    if(textarea.value !== newValue){
-        textarea.value = newValue;
-    }
+    highlight.innerHTML = html;
 }
 
-document.getElementById("script").addEventListener("input", highlightComments);
+const textarea = document.getElementById("script");
+
+textarea.addEventListener("input", updateHighlight);
+textarea.addEventListener("scroll", ()=>{
+    document.getElementById("highlight").scrollTop = textarea.scrollTop;
+});
 
 function autoSave(){
     const roteiro = document.getElementById("script").value;
@@ -304,6 +350,7 @@ window.onload = function(){
     document.getElementById("script").value = data.roteiro;
     toggles = data.toggles || {};
 
+    updateHighlight();
     splitScript();
 
     for (let i in data.audios){
