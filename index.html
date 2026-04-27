@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AudioScript Web</title>
+<title>Audio Script</title>
 
 <style>
 body {
@@ -17,75 +17,32 @@ body {
 
 h2 {
     display:flex;
-    align-items:baseline;
+    align-items:flex-end;
     gap:10px;
 }
 
 h2 span {
-    font-size:0.5em;
+    font-size:50%;
     color:#888;
 }
 
-/* EDITOR */
-.editor {
-    position:relative;
-}
-
-#highlight {
-    position:absolute;
-    top:0;
-    left:0;
-    right:0;
-    bottom:0;
-    padding:8px;
-    white-space:pre-wrap;
-    word-wrap:break-word;
-    color:#eee;
-    background:#111;
-    border-radius:8px;
-    pointer-events:none;
-    border:1px solid #333;
-}
-
-#highlight .commentMark {
-    font-weight:bold;
-}
-
-textarea#script {
+textarea, input {
     width:100%;
     margin-bottom:10px;
     font-size:14px;
-    position:relative;
-    background:transparent;
-    color:transparent;
-    caret-color:#fff;
-    z-index:2;
-    resize:vertical;
-    padding:8px;
-    border-radius:8px;
-    border:1px solid #333;
-}
-
-input {
-    width:100%;
-    margin-bottom:10px;
-    font-size:14px;
-    border-radius:8px;
-    padding:8px;
-    background:#111;
-    color:#eee;
-    border:1px solid #333;
+    border-radius:6px;
 }
 
 button {
     margin:4px 4px 4px 0;
     padding:6px 10px;
     font-size:13px;
-    border-radius:8px;
+    border:none;
+    border-radius:6px;
     background:#111;
     color:#eee;
-    border:1px solid #333;
     cursor:pointer;
+    transition:0.2s;
 }
 
 button:hover {
@@ -112,12 +69,12 @@ audio {
 }
 
 .comment {
-    border:1px dashed #555;
-    padding:16px;
-    margin:30px 0;
+    border:1px dashed #444;
+    padding:12px;
+    margin:25px 0;
     color:#aaa;
     font-style:italic;
-    border-radius:10px;
+    border-radius:8px;
 }
 
 .topbar {
@@ -129,15 +86,11 @@ audio {
 
 <h2>🎤AudioScript <span>web</span></h2>
 
-<div class="editor">
-    <pre id="highlight"></pre>
-    <textarea id="script" rows="6"
-    placeholder="Paste your script here or start creating now...
+<textarea id="script" rows="6" placeholder="Paste your script here or start creating now...
 Create comments using '//' before the comment"></textarea>
-</div>
 
 <div class="topbar">
-    <button onclick="splitScript()" title="Split script into audio parts">Split</button>
+    <button onclick="splitScript()" title="Split script into audio tracks">Split</button>
     <button onclick="clearProject()" title="Clear all saved data">Clear</button>
 </div>
 
@@ -146,19 +99,27 @@ Create comments using '//' before the comment"></textarea>
 
 <div id="parts"></div>
 
-<button onclick="generateAudio(false)" title="Generate final audio using selected tracks">Generate final audio</button>
-<button onclick="generateAudio(true)" title="Generate audio using ALL tracks">Generate final audio (with all)</button>
+<button onclick="generateAudio(false)" title="Generate audio using only selected tracks">Generate final audio</button>
+<button onclick="generateAudio(true)" title="Generate audio using all tracks">Generate final audio (with all)</button>
 
-<hr style="border:0; border-top:1px solid #333; margin-top:40px;">
+<hr style="border:0; border-top:1px solid #222; margin-top:40px;">
 
 <footer style="margin-top:20px; font-size:14px; color:#888; text-align:center;">
     made with AI (chatGPT),
     <a href="https://github.com/jhonny1307/audioscript-web" target="_blank" style="color:#aaa;">
-        project file (v10.0.1)
+        project file (v10)
     </a>
 </footer>
 
 <script>
+function vibrate(){
+    if(navigator.vibrate){
+        navigator.vibrate(30);
+    }
+}
+
+document.addEventListener("click", vibrate);
+
 let parts = [];
 let chunks = {};
 let toggles = {};
@@ -166,35 +127,6 @@ let mediaRecorder;
 let currentStream;
 let state = {};
 let tempData = {};
-
-function vibrate(){
-    if(navigator.vibrate){
-        navigator.vibrate(10);
-    }
-}
-document.addEventListener("click", vibrate);
-
-/* HIGHLIGHT REAL (SEM QUEBRAR TEXTO) */
-function updateHighlight(){
-    const text = document.getElementById("script").value;
-    const highlight = document.getElementById("highlight");
-
-    const html = text.split("\n").map(line=>{
-        if(line.trim().startsWith("//")){
-            return line.replace("//", "<span class='commentMark'>//</span>");
-        }
-        return line;
-    }).join("\n");
-
-    highlight.innerHTML = html;
-}
-
-const textarea = document.getElementById("script");
-
-textarea.addEventListener("input", updateHighlight);
-textarea.addEventListener("scroll", ()=>{
-    document.getElementById("highlight").scrollTop = textarea.scrollTop;
-});
 
 function autoSave(){
     const roteiro = document.getElementById("script").value;
@@ -240,12 +172,14 @@ function splitScript() {
         div.className = "part";
         div.innerHTML = `
             <p>${p}</p>
+
             <audio controls id="audio_${i}"></audio>
+
             <div class="controls">
                 <button title="Mark as good/bad" id="like_${i}" onclick="toggleLike(${i})">${toggles[i] ? "🔴" : "⚫"}</button>
                 <button title="Start or stop recording" id="btn_${i}" onclick="toggleRecording(${i})">Record</button>
-                <button title="Interrupt recording without saving" id="interrupt_${i}" onclick="interruptRecording(${i})" style="display:none;">Interrupt</button>
-                <button title="Upload external audio file" id="upload_${i}" onclick="uploadAudio(${i})">Upload</button>
+                <button title="Cancel recording" id="interrupt_${i}" onclick="interruptRecording(${i})" style="display:none;">Interrupt</button>
+                <button title="Upload external audio" id="upload_${i}" onclick="uploadAudio(${i})">Upload</button>
                 <input type="file" id="file_${i}" accept="audio/*" style="display:none;">
             </div>
         `;
@@ -350,7 +284,6 @@ window.onload = function(){
     document.getElementById("script").value = data.roteiro;
     toggles = data.toggles || {};
 
-    updateHighlight();
     splitScript();
 
     for (let i in data.audios){
