@@ -2,20 +2,80 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Audio Script</title>
+
 <style>
-body { font-family: Arial; background:#111; color:#eee; padding:20px; }
-textarea, input { width:100%; margin-bottom:10px; }
-button { margin:5px 5px 5px 0; }
-.part { border:1px solid #444; padding:10px; margin:10px 0; }
-.controls { display:flex; align-items:center; gap:5px; flex-wrap:wrap; }
-.comment { border:1px dashed #666; padding:10px; margin:10px 0; color:#aaa; font-style:italic; }
-.topbar { margin-bottom:15px; }
+body {
+    font-family: Arial;
+    background:#111;
+    color:#eee;
+    padding:15px;
+    max-width:900px;
+    margin:auto;
+}
+
+textarea, input {
+    width:100%;
+    margin-bottom:10px;
+    font-size:16px;
+}
+
+button {
+    margin:5px 5px 5px 0;
+    padding:8px 12px;
+    font-size:14px;
+}
+
+.part {
+    border:1px solid #444;
+    padding:10px;
+    margin:15px 0;
+    border-radius:6px;
+}
+
+.controls {
+    margin-top:10px;
+    display:flex;
+    flex-wrap:wrap;
+    gap:5px;
+}
+
+audio {
+    width:100%;
+    margin-top:10px;
+}
+
+.comment {
+    border:1px dashed #666;
+    padding:10px;
+    margin:10px 0;
+    color:#aaa;
+    font-style:italic;
+}
+
+.topbar {
+    margin-bottom:15px;
+}
+
+/* 📱 MOBILE */
+@media (max-width:600px){
+    body { padding:10px; }
+    button {
+        flex:1 1 100%;
+        font-size:16px;
+        padding:10px;
+    }
+    .controls {
+        flex-direction:column;
+    }
+}
 </style>
 </head>
 <body>
 
 <h2>Audio Script</h2>
+
 <textarea id="script" rows="6" placeholder="Paste your script here..."></textarea>
 
 <div class="topbar">
@@ -36,7 +96,7 @@ button { margin:5px 5px 5px 0; }
 <footer style="margin-top:20px; font-size:14px; color:#888; text-align:center;">
     made with AI (chatGPT),
     <a href="https://github.com/jhonny1307/audioscript-web" target="_blank" style="color:#aaa;">
-        project file (v9)
+        project file (v9.1)
     </a>
 </footer>
 
@@ -93,13 +153,15 @@ function splitScript() {
         div.className = "part";
         div.innerHTML = `
             <p>${p}</p>
+
+            <audio controls id="audio_${i}"></audio>
+
             <div class="controls">
                 <button id="like_${i}" onclick="toggleLike(${i})">${toggles[i] ? "🔴" : "⚫"}</button>
                 <button id="btn_${i}" onclick="toggleRecording(${i})">Record</button>
                 <button id="interrupt_${i}" onclick="interruptRecording(${i})" style="display:none;">Interrupt</button>
                 <button id="upload_${i}" onclick="uploadAudio(${i})">Upload</button>
                 <input type="file" id="file_${i}" accept="audio/*" style="display:none;">
-                <audio controls id="audio_${i}"></audio>
             </div>
         `;
         container.appendChild(div);
