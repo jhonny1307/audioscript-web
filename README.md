@@ -94,6 +94,18 @@ There is only regret.
 
 ---
 
+## 📁 Project Structure
+
+```text
+audioscript-web/
+├── index.html   # Page structure and interface
+├── style.css    # Visual styles and layout
+├── script.js    # Application logic and audio processing
+└── README.md    # Project documentation
+```
+
+The application uses separate HTML, CSS, and JavaScript files. External libraries are loaded only where needed; JSZip remains loaded from its CDN.
+
 ## 🧱 Tech Stack
 
 * HTML
