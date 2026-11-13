@@ -1,0 +1,8 @@
+body{font-family:Arial;background:#010101;color:#eee;padding:15px;padding-bottom:240px;max-width:900px;margin:auto}
+h2{display:flex;align-items:flex-end;gap:10px} h2 span{font-size:50%;color:#888}
+textarea,input{width:100%;margin-bottom:10px;font-size:14px;border-radius:6px;background:#111;color:#eee;border:1px solid #333;padding:8px}
+button{margin:4px 4px 4px 0;padding:6px 10px;font-size:13px;border:none;border-radius:6px;background:#111;color:#eee;cursor:pointer;transition:.2s}button:hover{background:#222}
+.part{border:1px solid #333;padding:12px;margin:20px 0;border-radius:10px}.controls{margin-top:10px;display:flex;flex-wrap:wrap;gap:4px}audio{width:100%;margin-top:10px}
+.comment{border:1px dashed #444;padding:12px;margin:30px 0;color:#aaa;font-style:italic;border-radius:8px}
+.preview{position:fixed;bottom:10px;right:10px;width:300px;border:1px solid #444;padding:12px;border-radius:12px;background:#0a0a0a;box-shadow:0 0 10px rgba(0,0,0,.8);z-index:999;box-sizing:border-box}
+.previewControls{display:flex;align-items:flex-start;gap:4px}.exportMenu{display:none;flex-direction:column;gap:4px;margin-top:4px;padding:8px;border:1px solid #333;border-radius:8px;background:#111;z-index:1000;width:100%;box-sizing:border-box}.exportMenu button{width:100%;text-align:left;margin:0}.exportMenu.open{display:flex}
