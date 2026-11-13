@@ -156,7 +156,7 @@ Seriously... or no... or yes...
 
 ---
 
-## 📌 Latest Update - V12.1.5
+## 📌 Latest Update - V12.2.1
 
 **Date:** `20/08/2026`
 
